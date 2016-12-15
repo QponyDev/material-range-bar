@@ -20,8 +20,8 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -60,9 +60,9 @@ class PinView extends View {
 
     private Paint mTextPaint;
 
-    private Drawable mPin;
-
     private String mValue;
+
+    private String mFontPath;
 
     // Radius of the new thumb if selected
     private int mPinRadiusPx;
@@ -108,27 +108,27 @@ class PinView extends View {
     /**
      * The view is created empty with a default constructor. Use init to set all the initial
      * variables for the pin
-     *
-     * @param ctx          Context
-     * @param y            The y coordinate to raw the pin (i.e. the bar location)
-     * @param pinRadiusDP  the initial size of the pin
-     * @param pinColor     the color of the pin
-     * @param textColor    the color of the value text in the pin
-     * @param circleRadius the radius of the selector circle
-     * @param minFont  the minimum font size for the pin text
-     * @param maxFont  the maximum font size for the pin text
-     * @param pinsAreTemporary  whether to show the pin initially or just the circle
+     *  @param ctx              Context
+     * @param y                The y coordinate to raw the pin (i.e. the bar location)
+     * @param pinRadiusDP      the initial size of the pin
+     * @param pinColor         the color of the pin
+     * @param textColor        the color of the value text in the pin
+     * @param circleRadius     the radius of the selector circle
+     * @param minFont          the minimum font size for the pin text
+     * @param maxFont          the maximum font size for the pin text
+     * @param fontPath
+     * @param pinsAreTemporary whether to show the pin initially or just the circle
      */
     public void init(Context ctx, float y, float pinRadiusDP, int pinColor, int textColor,
-            float circleRadius, int circleColor, float minFont, float maxFont, boolean pinsAreTemporary) {
+                     float circleRadius, int circleColor, float minFont, float maxFont, String fontPath, boolean pinsAreTemporary) {
 
         mRes = ctx.getResources();
-        mPin = ContextCompat.getDrawable(ctx, R.drawable.rotate);
 
         mDensity = getResources().getDisplayMetrics().density;
         mMinPinFont = minFont / mDensity;
         mMaxPinFont = maxFont / mDensity;
         mPinsAreTemporary = pinsAreTemporary;
+        mFontPath = fontPath;
 
         mPinPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 15, mRes.getDisplayMetrics());
@@ -155,6 +155,11 @@ class PinView extends View {
         mTextPaint.setColor(textColor);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextSize(textSize);
+        if (!TextUtils.isEmpty(mFontPath)) {
+            Typeface customFont = Typeface.createFromAsset(getContext().getAssets(), mFontPath);
+            mTextPaint.setTypeface(customFont);
+        }
+
         // Creates the paint and sets the Paint values
         mCirclePaint = new Paint();
         mCirclePaint.setColor(circleColor);
@@ -265,7 +270,6 @@ class PinView extends View {
             mBounds.set((int) mX - mPinRadiusPx,
                     (int) mY - (mPinRadiusPx * 2) - (int) mPinPadding,
                     (int) mX + mPinRadiusPx, (int) mY - (int) mPinPadding);
-            mPin.setBounds(mBounds);
             String text = mValue;
 
             if (this.formatter != null) {
@@ -275,8 +279,6 @@ class PinView extends View {
             calibrateTextSize(mTextPaint, text, mBounds.width());
             mTextPaint.getTextBounds(text, 0, text.length(), mBounds);
             mTextPaint.setTextAlign(Paint.Align.CENTER);
-            mPin.setColorFilter(mPinFilter);
-            mPin.draw(canvas);
             canvas.drawText(text,
                     mX, mY - mPinRadiusPx - mPinPadding + mTextYPadding,
                     mTextPaint);

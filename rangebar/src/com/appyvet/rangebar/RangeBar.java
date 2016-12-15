@@ -189,6 +189,8 @@ public class RangeBar extends View {
 
     private boolean mArePinsTemporary = true;
 
+    private String mFontPath;
+
     private PinTextFormatter mPinTextFormatter = new PinTextFormatter() {
         @Override
         public String getText(String value) {
@@ -253,6 +255,8 @@ public class RangeBar extends View {
         bundle.putFloat("MIN_PIN_FONT", mMinPinFont);
         bundle.putFloat("MAX_PIN_FONT", mMaxPinFont);
 
+        bundle.putString("FONT_PATH", mFontPath);
+
         return bundle;
     }
 
@@ -289,6 +293,8 @@ public class RangeBar extends View {
 
             mMinPinFont = bundle.getFloat("MIN_PIN_FONT");
             mMaxPinFont = bundle.getFloat("MAX_PIN_FONT");
+
+            mFontPath = bundle.getString("FONT_PATH");
 
             setRangePinsByIndices(mLeftIndex, mRightIndex);
             super.onRestoreInstanceState(bundle.getParcelable("instanceState"));
@@ -349,12 +355,12 @@ public class RangeBar extends View {
             mLeftThumb = new PinView(ctx);
             mLeftThumb.setFormatter(mFormatter);
             mLeftThumb.init(ctx, yPos, expandedPinRadius, mPinColor, mTextColor, mCircleSize,
-                    mCircleColor, mMinPinFont, mMaxPinFont, mArePinsTemporary);
+                    mCircleColor, mMinPinFont, mMaxPinFont, mFontPath, mArePinsTemporary);
         }
         mRightThumb = new PinView(ctx);
         mRightThumb.setFormatter(mFormatter);
         mRightThumb.init(ctx, yPos, expandedPinRadius, mPinColor, mTextColor, mCircleSize,
-                mCircleColor, mMinPinFont, mMaxPinFont, mArePinsTemporary);
+                mCircleColor, mMinPinFont, mMaxPinFont, mFontPath, mArePinsTemporary);
 
         // Create the underlying bar.
         final float marginLeft = Math.max(mExpandedPinRadius, mCircleSize);
@@ -624,6 +630,11 @@ public class RangeBar extends View {
             Log.e(TAG, "tickCount less than 2; invalid tickCount.");
             throw new IllegalArgumentException("tickCount less than 2; invalid tickCount.");
         }
+    }
+
+    public void setFontPath(String fontPath) {
+        mFontPath = fontPath;
+        createPins();
     }
 
     /**
@@ -1061,7 +1072,7 @@ public class RangeBar extends View {
                     .getDimension(R.styleable.RangeBar_tickHeight, DEFAULT_TICK_HEIGHT_DP);
             mBarWeight = ta.getDimension(R.styleable.RangeBar_barWeight, DEFAULT_BAR_WEIGHT_PX);
             mBarColor = ta.getColor(R.styleable.RangeBar_rangeBarColor, DEFAULT_BAR_COLOR);
-            mTextColor = ta.getColor(R.styleable.RangeBar_textColor, DEFAULT_TEXT_COLOR);
+            mTextColor = ta.getColor(R.styleable.RangeBar_pinTextColor, DEFAULT_TEXT_COLOR);
             mPinColor = ta.getColor(R.styleable.RangeBar_pinColor, DEFAULT_PIN_COLOR);
             mActiveBarColor = mBarColor;
             mCircleSize = ta.getDimension(R.styleable.RangeBar_selectorSize,
@@ -1098,6 +1109,8 @@ public class RangeBar extends View {
                     DEFAULT_MAX_PIN_FONT_SP * density);
 
             mIsRangeBar = ta.getBoolean(R.styleable.RangeBar_rangeBar, true);
+
+            mFontPath = ta.getString(R.styleable.RangeBar_fontPath);
         } finally {
             ta.recycle();
         }
@@ -1141,12 +1154,12 @@ public class RangeBar extends View {
         if (mIsRangeBar) {
             mLeftThumb = new PinView(ctx);
             mLeftThumb.init(ctx, yPos, 0, mPinColor, mTextColor, mCircleSize, mCircleColor,
-                    mMinPinFont, mMaxPinFont, false);
+                    mMinPinFont, mMaxPinFont, mFontPath, false);
         }
         mRightThumb = new PinView(ctx);
         mRightThumb
                 .init(ctx, yPos, 0, mPinColor, mTextColor, mCircleSize, mCircleColor, mMinPinFont,
-                        mMaxPinFont, false);
+                        mMaxPinFont, mFontPath, false);
 
         float marginLeft = getMarginLeft();
         float barLength = getBarLength();
