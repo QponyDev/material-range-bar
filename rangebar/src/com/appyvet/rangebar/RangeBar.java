@@ -95,6 +95,7 @@ public class RangeBar extends View {
     private static final float DEFAULT_CIRCLE_SIZE_DP = 5;
 
     private static final float DEFAULT_BAR_PADDING_BOTTOM_DP = 24;
+    public static final int DISTANCE_BETWEEN_PINS = 4;
 
     // Instance variables for all of the customizable attributes
 
@@ -141,6 +142,8 @@ public class RangeBar extends View {
     private int mDefaultHeight = 150;
 
     private int mTickCount = (int) ((mTickEnd - mTickStart) / mTickInterval) + 1;
+
+    float mOldX;
 
     private PinView mLeftThumb;
 
@@ -1314,7 +1317,23 @@ public class RangeBar extends View {
      *
      * @param x the x-coordinate of the move event
      */
+
     private void onActionMove(float x) {
+
+        // Block pin movement if it is too close to other pin
+        if (mIsRangeBar && mRightThumb.isPressed() && isPinMovingLeft(x)) {
+            if (mLeftIndex + DISTANCE_BETWEEN_PINS > mBar.getNearestTickIndex(mRightThumb)) {
+                return;
+            }
+        }
+
+        if (mIsRangeBar && mLeftThumb.isPressed() && !isPinMovingLeft(x)) {
+            if (mBar.getNearestTickIndex(mLeftThumb) > mRightIndex - DISTANCE_BETWEEN_PINS) {
+                return;
+            }
+        }
+
+        mOldX = x;
 
         // Move the pressed thumb to the new x-position.
         if (mIsRangeBar && mLeftThumb.isPressed()) {
@@ -1361,6 +1380,10 @@ public class RangeBar extends View {
                         getPinValue(mRightIndex));
             }
         }
+    }
+
+    private boolean isPinMovingLeft(float x) {
+        return x <= mOldX;
     }
 
     /**
